@@ -1,9 +1,19 @@
 from fastapi import FastAPI
 from preload.config import db_pass, db_user, host, db_name
 from database.database import db, DBCommands
-from database.models import Auth, MakeFollower, Registration, Lesson, Subject, Mark, Photo
+from database.models import MakeFollower, Registration, Lesson, Subject, Mark, Photo
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/user/profile/{user_id}")
@@ -14,12 +24,28 @@ async def get_user(user_id: int):
     return user
 
 
+@app.get("/user/subject/{user_id}")
+async def get_subject_by_user(user_id: int):
+    dbc = DBCommands()
+    await db.set_bind(f'postgresql://{db_user}:{db_pass}@{host}/{db_name}')
+    subject = await dbc.get_subject_by_user(user_id)
+    return subject
+
+
 @app.get("/user/lesson/{user_id}")
 async def get_lessons_by_user(user_id: int):
     dbc = DBCommands()
     await db.set_bind(f'postgresql://{db_user}:{db_pass}@{host}/{db_name}')
     lessons = await dbc.get_lessons_by_user(user_id)
     return lessons
+
+
+@app.get("/teacher/lesson_id/{lesson_id}")
+async def get_lesson_by_id(lesson_id: int):
+    dbc = DBCommands()
+    await db.set_bind(f'postgresql://{db_user}:{db_pass}@{host}/{db_name}')
+    lesson = await dbc.get_lesson_by_id(lesson_id)
+    return lesson
 
 
 @app.get("/user/evaluation/{user_id}")
@@ -62,11 +88,11 @@ async def is_teacher(user_id: int):
     return result
 
 
-@app.get("/user/authorisation/")
-async def authorisation(params: Auth):
+@app.get("/user/authorisation/{email}/{password}")
+async def authorisation(email: str, password: str):
     dbc = DBCommands()
     await db.set_bind(f'postgresql://{db_user}:{db_pass}@{host}/{db_name}')
-    result = await dbc.authorisation(params.email, params.password)
+    result = await dbc.authorisation(email, password)
     return result
 
 

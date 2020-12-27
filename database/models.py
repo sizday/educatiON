@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
 
-class Auth(BaseModel):
-    email: str
-    password: str
+class SubjectByUser(BaseModel):
+    subject_title: str
+    count_passed_lessons: int
+    count_lessons: int
 
 
 class MakeFollower(BaseModel):
